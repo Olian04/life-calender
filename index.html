@@ -1,0 +1,131 @@
+<style>
+* {
+  padding: 0;
+  margin: 0;
+  transition: opacity 1s ease-in-out;
+}
+
+.hide {
+  opacity: 0;
+}
+
+.modal {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-49%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal > input {
+  text-align: center;
+  margin-top: 13px;
+}
+
+.wrapper {
+  position: absolute;
+  opacity: 1;
+  left: 5px;
+  top: 5px;
+  width: calc(100% - 10px);
+  height: calc(100% - 10px);
+  display: flex;
+  flex-direction: column;
+  text-align: center;
+  justify-content: center;
+}
+
+.box-grid {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.box {
+  box-sizing: border-box;
+  width: 11px;
+  height: 11px;
+  border: 1px solid #1F2227;
+  border-radius: 25%;
+  margin-right: 1px;
+}
+</style>
+
+<div id="root"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/brynja/cdn/brynja.js"></script>
+<script>
+const WEEKS_IN_A_YEAR = Math.floor(365 / 7);
+const lifeExpectency = 90 * WEEKS_IN_A_YEAR;
+
+const { render } = brynja;
+
+const renderAgePrompt = (hide) =>
+  render(_=>_
+    .child('div', _=>_
+    	.when(hide, _=>_
+      	.class(['hide'])
+      )
+    	.class(['modal'])
+      .child('h3', _=>_
+        .text('How old are you (in years)?')
+      )
+      .child('input', _=>_
+      	.prop('placeholder', '...')
+      	.on('change', (e) => {
+        	renderAgePrompt(true);
+          setTimeout(() => {
+            renderBoxes(0, true);
+            setTimeout(() => {
+              renderBoxes(Number(e.target.value) * WEEKS_IN_A_YEAR, false);
+            }, 500);
+          }, 1000);
+        })
+      )
+    )
+  );
+  
+const renderBoxes = (age, hide) =>
+  render(_=>_
+  	.child('div', _=>_
+    	.class(['wrapper'])
+      .when(hide, _=>_
+      	.class(['hide'])
+      )
+      .child('div', _=>_
+        .class(['box-grid'])
+        .children('div', lifeExpectency / 2, (_,i)=>_
+          .class(['box'])
+          .when(i < age, _=>_
+          	.style({
+            	opacity: '0.1',
+              transitionDelay: `${i * 5}ms`,
+            })
+          )
+      	)
+      )
+      .child('h3', _=>_
+      	.text(`The average persion will experiance ${lifeExpectency} weekends in the lifetime.`)
+      )
+      .child('div', _=>_
+        .class(['box-grid'])
+        .children('div', lifeExpectency / 2, (_,i)=>_
+          .class(['box'])
+          .when(((lifeExpectency / 2) + i) < age, _=>_
+            .style({
+            	opacity: '0.1',
+              transitionDelay: `${((lifeExpectency / 2) + i) * 5}ms`,
+            })
+          )
+      	)
+      )
+    )
+  );
+  
+renderAgePrompt(false);
+</script>
