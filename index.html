@@ -36,11 +36,12 @@
   flex-direction: column;
   text-align: center;
   justify-content: center;
+  align-items: center;
 }
 
 .box-grid {
   position: relative;
-  width: 100%;
+  width: min(936px, 100%);
   display: flex;
   flex-direction: row;
   flex-wrap: wrap;
@@ -54,12 +55,30 @@
   border-radius: 25%;
   margin-right: 1px;
 }
+
+.hidden-message {
+  position: relative;
+  max-height: 0px;
+  opacity: 0;
+  overflow: hidden;
+  transition: all 1s ease-in-out;
+}
 </style>
 
 <div id="root"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/brynja/cdn/brynja.js"></script>
 <script>
+/*
+Life calender / exsitential crisis:
+* Disaplys your "progression" through life as a percentile of the number of weeks left in a 90 year long life.
+* Extended idea: Remove days if you smoke.
+* Extended idea: Visualize in different ways, ex; 
+a wall of boxed where each box is a week and they are slowly becoming checked as you age,
+a pie chart, that shows a simple horrifying truth as a dounut (the procentile you have left in life),
+a paralel, showing how many of X you have left in your life (ex: olympic games)
+*/
+
 const WEEKS_IN_A_YEAR = Math.floor(365 / 7);
 const lifeExpectency = 90 * WEEKS_IN_A_YEAR;
 
@@ -82,7 +101,16 @@ const renderAgePrompt = (hide) =>
           setTimeout(() => {
             renderBoxes(0, true);
             setTimeout(() => {
-              renderBoxes(Number(e.target.value) * WEEKS_IN_A_YEAR, false);
+            	const n = Number(e.target.value) * WEEKS_IN_A_YEAR;
+              renderBoxes(n, false);
+              setTimeout(() => {
+              	document.querySelectorAll('.hidden-message').forEach(el => {
+                	el.style = 'max-height: 60px; opacity: 1;';
+                });
+                document.querySelectorAll('.smoking').forEach(el => {
+                	el.style = 'transition-duration: 2s; opacity: 0.1';
+                });
+              }, n * 5);
             }, 500);
           }, 1000);
         })
@@ -110,7 +138,14 @@ const renderBoxes = (age, hide) =>
       	)
       )
       .child('h3', _=>_
-      	.text(`The average persion will experiance ${lifeExpectency} weekends in the lifetime.`)
+      	.style({
+        	fontWeight: '900',
+        })
+      	.text(`The average persion will experiance ${lifeExpectency} weekends in the lifetime`)
+      )
+      .child('h3', _=>_
+      	.class(['hidden-message'])
+      	.text(`Smoking will remove ${10 * WEEKS_IN_A_YEAR} of those`)
       )
       .child('div', _=>_
         .class(['box-grid'])
@@ -121,6 +156,9 @@ const renderBoxes = (age, hide) =>
             	opacity: '0.1',
               transitionDelay: `${((lifeExpectency / 2) + i) * 5}ms`,
             })
+          )
+          .when(((lifeExpectency / 2) - i) < 520, _=>_
+          	.class(['smoking'])
           )
       	)
       )
